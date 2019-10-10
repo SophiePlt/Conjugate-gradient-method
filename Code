@@ -1,0 +1,73 @@
+
+'Importation des bibliothèques utiles pour la suite'
+
+import numpy as np
+import itertools
+
+
+
+'Définition de la fonction f(x) qui va nous permettre dutiliser les matrices A et b et ainsi de calculer le minimum de f '
+
+def function(A,b,c,xx):
+    shape=xx[0].shape
+    ZZ=np.zeros_like(xx[0])
+    for item in itertools.product(*map(xrange,shape)):
+        vect=list()
+        for elem in xx:
+            vect.append(elem[item])
+        vecx=np.array(vect,ndmin=1)
+        ZZ[item]=0.5*np.dot(np.transpose(vecx),A.dot(vecx))-np.dot(np.transpose(vecx),b)+c
+    return ZZ
+
+
+
+'Définition de la fonction gradient utile pour le calcul de la fonction gradient conjugué'
+
+def gradient(A,b,x):
+    return (A.dot(x)-b)
+  
+
+  
+'écriture du script de la fonction gradient conjugué'
+
+def conjugate(x0,fonction,tol=10**(-10),itermax=1000):
+    A=fonction['A']
+    b=fonction['b']
+    c=fonction['c']
+    xx=[np.transpose(np.array(x0))]
+    dir=-gradient(A,b,xx[-1])
+    residu=[-gradient(A,b,xx[0])]
+    k=0
+    while np.linalg.norm(gradient(A,b,xx[-1]),2)>=tol and k<=itermax :
+        rho=-(float(np.vdot(gradient(A,b,xx[-1]),dir)))/(float(np.vdot(A.dot(dir),dir)))
+        xx.append(xx[-1]+rho*dir)
+        print ('iteration numero':k+1, 'vecteur' :xx)
+        beta=(float(np.vdot(A.dot(gradient(A,b,xx[-1])),dir)))/(float(np.vdot(A.dot(dir),dir)))
+        dir=-gradient(A,b,xx[-1])+np.dot(beta,dir)
+        residu=-gradient(A,b,xx[-1])
+        k=k+1
+    return {'nombre ditérations':k ,'xx':np.asarray(xx),'residu':np.asarray(residu)}
+
+
+
+'Initialisation des vecteurs et matrice de départ'
+
+x0=np.array([0,0,0,0,0])
+A=np.array([[55,8,-9,16,27],[8,6,-9,15,14],[-9,-9,22,-24,-31],[16,15,-24,45,34],[27,14,-31,34,75]])
+b=np.array([1,-2,-8,7,-8])
+c=np.ones(5)
+fonction={'A':A,'b':b,'c':c}
+
+
+
+'Print des fonctions et paramètres à retourner'
+    
+print {'Xmin' : conjugate(x0,fonction,10**(-10),10000)['xx'][-1], ' Nombre diterations': conjugate(x0,fonction,10**(-10),10000)['nombre ditérations']}
+
+
+print {'f(xmin)=': 0.5*np.dot(np.transpose([0.44420182,-5.86090488,-1.88917518,1.38176551,-0.57980319])
+,A.dot([0.44420182,-5.86090488,-1.88917518,1.38176551,-0.57980319]))-np.dot(np.transpose([0.44420182,-5.86090488,-1.88917518,1.38176551,-0.57980319]),b)}
+
+
+print {'f([1,1,1,1,1])=': 0.5*np.dot(np.transpose([1,1,1,1,1])
+,A.dot([1,1,1,1,1]))-np.dot(np.transpose([1,1,1,1,1]),b)}
